@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather Forecast Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Welcome Screen -->
+    <div id="welcome-screen" class="welcome-screen">
+        <div class="welcome-content">
+            <div class="welcome-weather">
+                <i class="fas fa-cloud-sun"></i>
+            </div>
+            <h1>Selamat Datang</h1>
+            <p id="welcome-message">Selamat pagi!</p>
+            <button id="enter-dashboard" class="enter-btn">
+                Masuk ke Dashboard
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <div class="time" id="current-time">00:00:00</div>
+                <div class="date" id="current-date">Hari, Tanggal Bulan Tahun</div>
+            </div>
+            <div class="header-right">
+                <div class="location-selector">
+                    <select id="location-select" class="location-select">
+                        <option value="jakarta">Jakarta</option>
+                        <option value="bandung">Bandung</option>
+                        <option value="surabaya">Surabaya</option>
+                        <option value="medan">Medan</option>
+                        <option value="denpasar">Denpasar</option>
+                        <option value="makassar">Makassar</option>
+                        <option value="yogyakarta">Yogyakarta</option>
+                        <option value="semarang">Semarang</option>
+                    </select>
+                </div>
+                <div class="current-weather">
+                    <i class="fas fa-sun weather-icon" id="current-weather-icon"></i>
+                    <span class="weather-temp" id="current-temp">28°C</span>
+                </div>
+                <div class="location">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span id="current-location">Jakarta</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="menu-toggle" id="menu-toggle">
+            <i class="fas fa-bars"></i>
+        </button>
+
+        <!-- Sidebar -->
+        <nav class="sidebar" id="sidebar">
+            <div class="sidebar-logo">
+                <h2><i class="fas fa-cloud-sun"></i> WeatherApp</h2>
+            </div>
+            <ul class="sidebar-menu">
+                <li><a href="#" class="menu-item active" data-page="dashboard">
+                    <i class="fas fa-home"></i>
+                    <span>Dashboard</span>
+                </a></li>
+                <li><a href="#" class="menu-item" data-page="bmkg">
+                    <i class="fas fa-chart-line"></i>
+                    <span>Statistik BMKG</span>
+                </a></li>
+                <li><a href="#" class="menu-item" data-page="mitigation">
+                    <i class="fas fa-shield-alt"></i>
+                    <span>Mitigasi Bencana</span>
+                </a></li>
+                <li><a href="#" class="menu-item" data-page="rainfall">
+                    <i class="fas fa-cloud-rain"></i>
+                    <span>Curah Hujan</span>
+                </a></li>
+                <li><a href="#" class="menu-item" data-page="weather-map">
+                    <i class="fas fa-map"></i>
+                    <span>Peta Cuaca</span>
+                </a></li>
+            </ul>
+            
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="user-details">
+                        <span class="user-name">Weather User</span>
+                        <span class="user-status">Online</span>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <section id="dashboard-page" class="page active">
+                <div class="page-header">
+                    <h1 id="dashboard-greeting">Selamat Pagi</h1>
+                    <p>Informasi cuaca terkini di <span id="location-display">Jakarta</span> - Update Real-time</p>
+                </div>
+
+                <!-- Current Weather Overview -->
+                <div class="current-overview">
+                    <div class="overview-card main-card">
+                        <div class="overview-icon">
+                            <i class="fas fa-sun" id="overview-weather-icon"></i>
+                        </div>
+                        <div class="overview-content">
+                            <h2 id="overview-temp">28°C</h2>
+                            <p id="overview-condition">Cerah Berawan</p>
+                            <p id="overview-location">Jakarta, Indonesia</p>
+                            <div class="weather-update-time">
+                                <i class="fas fa-sync-alt"></i>
+                                <span id="update-time">Diperbarui beberapa detik lalu</span>
+                            </div>
+                        </div>
+                        <div class="overview-details">
+                            <div class="detail-item">
+                                <i class="fas fa-tint"></i>
+                                <span id="overview-humidity">65%</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-wind"></i>
+                                <span id="overview-wind">12 km/jam</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-compress-alt"></i>
+                                <span id="overview-pressure">1012 hPa</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-eye"></i>
+                                <span id="overview-visibility">10 km</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-sun"></i>
+                                <span id="overview-uv">6 - Tinggi</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-cloud"></i>
+                                <span id="overview-clouds">45%</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current Weather Stats -->
+                <div class="stats-section">
+                    <h2 class="section-title">Statistik Cuaca Saat Ini</h2>
+                    <div class="weather-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon temp-high">
+                                <i class="fas fa-temperature-high"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Suhu Maksimum</h3>
+                                <p class="stat-value" id="stat-max-temp">32°C</p>
+                                <p class="stat-time">Hari ini</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon temp-low">
+                                <i class="fas fa-temperature-low"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Suhu Minimum</h3>
+                                <p class="stat-value" id="stat-min-temp">24°C</p>
+                                <p class="stat-time">Hari ini</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon humidity">
+                                <i class="fas fa-tint"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Kelembaban</h3>
+                                <p class="stat-value" id="stat-humidity">75%</p>
+                                <p class="stat-time">Rata-rata</p>
+                            </div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon wind">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                            <div class="stat-info">
+                                <h3>Kecepatan Angin</h3>
+                                <p class="stat-value" id="stat-wind">12 km/jam</p>
+                                <p class="stat-time">Terkini</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Live Weather Updates -->
+                <div class="live-updates">
+                    <h2 class="section-title">Update Cuaca Real-time</h2>
+                    <div class="updates-container">
+                        <div class="update-card">
+                            <div class="update-icon">
+                                <i class="fas fa-satellite"></i>
+                            </div>
+                            <div class="update-content">
+                                <h3>Data Satelit</h3>
+                                <p id="satellite-status">Aktif - Update terakhir: <span id="satellite-time">2 menit lalu</span></p>
+                            </div>
+                        </div>
+                        <div class="update-card">
+                            <div class="update-icon">
+                                <i class="fas fa-broadcast-tower"></i>
+                            </div>
+                            <div class="update-content">
+                                <h3>Stasiun Cuaca</h3>
+                                <p id="station-status">6 stasiun aktif - Data real-time</p>
+                            </div>
+                        </div>
+                        <div class="update-card">
+                            <div class="update-icon">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="update-content">
+                                <h3>Interval Update</h3>
+                                <p>Data diperbarui setiap 30 detik</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- BMKG Statistics Page -->
+            <section id="bmkg-page" class="page">
+                <div class="page-header">
+                    <h1>Statistik Cuaca BMKG</h1>
+                    <p>Data dan analisis cuaca real-time dari Badan Meteorologi, Klimatologi, dan Geofisika</p>
+                </div>
+
+                <div class="bmkg-stats">
+                    <div class="stats-grid">
+                        <div class="stat-large-card">
+                            <div class="stat-large-icon">
+                                <i class="fas fa-satellite"></i>
+                            </div>
+                            <div class="stat-large-content">
+                                <h3>Data Satelit Real-time</h3>
+                                <p class="update-time">Status: <span id="bmkg-satellite-status">Aktif</span></p>
+                                <div class="progress-container">
+                                    <div class="progress-bar">
+                                        <div class="progress-fill" style="width: 95%"></div>
+                                    </div>
+                                    <span class="progress-text">95% Akurat</span>
+                                </div>
+                                <p class="last-update">Update: <span id="bmkg-update-time">Beberapa detik lalu</span></p>
+                            </div>
+                        </div>
+
+                        <div class="stat-large-card">
+                            <div class="stat-large-icon">
+                                <i class="fas fa-temperature-high"></i>
+                            </div>
+                            <div class="stat-large-content">
+                                <h3>Suhu Rata-rata Nasional</h3>
+                                <p class="large-stat" id="national-temp">28.5°C</p>
+                                <div class="trend up">
+                                    <i class="fas fa-arrow-up"></i>
+                                    <span>+0.3°C dari kemarin</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="stat-large-card">
+                            <div class="stat-large-icon">
+                                <i class="fas fa-cloud-rain"></i>
+                            </div>
+                            <div class="stat-large-content">
+                                <h3>Curah Hujan Nasional</h3>
+                                <p class="large-stat" id="national-rainfall">156 mm</p>
+                                <div class="trend down">
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>-12% dari bulan lalu</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="data-section">
+                        <h3 class="section-title">Data Stasiun BMKG Real-time</h3>
+                        <div class="table-container">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Stasiun</th>
+                                        <th>Suhu</th>
+                                        <th>Kelembaban</th>
+                                        <th>Tekanan</th>
+                                        <th>Angin</th>
+                                        <th>Curah Hujan</th>
+                                        <th>Status</th>
+                                        <th>Update</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="bmkg-stations-data">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <div class="warning-section">
+                        <h3 class="section-title">Peringatan Cuaca Real-time</h3>
+                        <div class="warning-cards">
+                            <div class="warning-card moderate">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <div class="warning-content">
+                                    <h4>Hujan Lebat</h4>
+                                    <p>Wilayah Jabodetabek hingga 3 hari ke depan</p>
+                                    <span class="warning-time" id="warning-time-1">Berlaku sampai 18 Jun</span>
+                                </div>
+                            </div>
+                            <div class="warning-card low">
+                                <i class="fas fa-info-circle"></i>
+                                <div class="warning-content">
+                                    <h4>Gelombang Tinggi</h4>
+                                    <p>Perairan Selat Sunda 2.5 - 4 meter</p>
+                                    <span class="warning-time" id="warning-time-2">Berlaku sampai 17 Jun</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Disaster Mitigation Page -->
+            <section id="mitigation-page" class="page">
+                <div class="page-header">
+                    <h1>Mitigasi Bencana</h1>
+                    <p>Informasi dan panduan keselamatan real-time untuk menghadapi bencana alam</p>
+                </div>
+
+                <div class="mitigation-content">
+                    <div class="alert-banner warning" id="live-alert-banner">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div class="alert-content">
+                            <h3 id="alert-title">Peringatan Cuaca Ekstrem</h3>
+                            <p id="alert-description">Memantau kondisi cuaca terkini...</p>
+                        </div>
+                    </div>
+
+                    <div class="disaster-cards">
+                        <div class="disaster-card flood">
+                            <div class="disaster-icon">
+                                <i class="fas fa-house-flood-water"></i>
+                            </div>
+                            <div class="disaster-content">
+                                <h3>Banjir</h3>
+                                <div class="disaster-steps">
+                                    <div class="step">
+                                        <span class="step-number">1</span>
+                                        <p>Evakuasi ke tempat yang lebih tinggi</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">2</span>
+                                        <p>Matikan aliran listrik dan gas</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">3</span>
+                                        <p>Bawa dokumen penting dan barang berharga</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">4</span>
+                                        <p>Hindari berjalan di air banjir</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="disaster-card earthquake">
+                            <div class="disaster-icon">
+                                <i class="fas fa-house-tsunami"></i>
+                            </div>
+                            <div class="disaster-content">
+                                <h3>Gempa Bumi</h3>
+                                <div class="disaster-steps">
+                                    <div class="step">
+                                        <span class="step-number">1</span>
+                                        <p>Lindungi kepala di bawah meja yang kuat</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">2</span>
+                                        <p>Jauhi kaca, jendela, dan benda tergantung</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">3</span>
+                                        <p>Jangan menggunakan lift saat gempa</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">4</span>
+                                        <p>Evakuasi setelah gempa berhenti</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="disaster-card storm">
+                            <div class="disaster-icon">
+                                <i class="fas fa-tornado"></i>
+                            </div>
+                            <div class="disaster-content">
+                                <h3>Badai & Angin Kencang</h3>
+                                <div class="disaster-steps">
+                                    <div class="step">
+                                        <span class="step-number">1</span>
+                                        <p>Tinggal di dalam rumah/bangunan kuat</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">2</span>
+                                        <p>Jauhi jendela, pintu, dan dinding luar</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">3</span>
+                                        <p>Matikan peralatan listrik non-esensial</p>
+                                    </div>
+                                    <div class="step">
+                                        <span class="step-number">4</span>
+                                        <p>Persiapkan emergency kit dan air minum</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="emergency-section">
+                        <h3 class="section-title">Kontak Darurat</h3>
+                        <div class="emergency-contacts">
+                            <div class="contact-card">
+                                <div class="contact-icon">
+                                    <i class="fas fa-phone-alt"></i>
+                                </div>
+                                <div class="contact-info">
+                                    <h4>BNPB</h4>
+                                    <p class="contact-number">117</p>
+                                    <span>Badan Nasional Penanggulangan Bencana</span>
+                                </div>
+                            </div>
+                            <div class="contact-card">
+                                <div class="contact-icon">
+                                    <i class="fas fa-life-ring"></i>
+                                </div>
+                                <div class="contact-info">
+                                    <h4>Basarnas</h4>
+                                    <p class="contact-number">115</p>
+                                    <span>Badan SAR Nasional</span>
+                                </div>
+                            </div>
+                            <div class="contact-card">
+                                <div class="contact-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="contact-info">
+                                    <h4>Polisi</h4>
+                                    <p class="contact-number">110</p>
+                                    <span>Darurat Polisi</span>
+                                </div>
+                            </div>
+                            <div class="contact-card">
+                                <div class="contact-icon">
+                                    <i class="fas fa-ambulance"></i>
+                                </div>
+                                <div class="contact-info">
+                                    <h4>Ambulans</h4>
+                                    <p class="contact-number">118/119</p>
+                                    <span>Darurat Medis</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Rainfall Page -->
+            <section id="rainfall-page" class="page">
+                <div class="page-header">
+                    <h1>Curah Hujan</h1>
+                    <p>Monitoring dan prediksi curah hujan real-time di berbagai wilayah</p>
+                </div>
+
+                <div class="rainfall-content">
+                    <div class="rainfall-overview">
+                        <div class="overview-cards">
+                            <div class="rainfall-card total electric-border" style="--electric-border-color:#00eaff;">
+                                <div class="eb-layers">
+                                    <div class="eb-stroke"></div>
+                                    <div class="eb-glow-1"></div>
+                                    <div class="eb-glow-2"></div>
+                                    <div class="eb-background-glow"></div>
+                                </div>
+                                <div class="rainfall-icon">
+                                    <i class="fas fa-cloud-rain"></i>
+                                </div>
+                                <div class="rainfall-info">
+                                    <h3>Curah Hujan Hari Ini</h3>
+                                    <p class="rainfall-value" id="today-rainfall">25 mm</p>
+                                    <p class="rainfall-status" id="today-status">Hujan Ringan</p>
+                                    <p class="rainfall-update" id="today-update">Update: 2 menit lalu</p>
+                                </div>
+                            </div>
+                            <div class="rainfall-card monthly electric-border" style="--electric-border-color:#00eaff;">
+                                <div class="eb-layers">
+                                    <div class="eb-stroke"></div>
+                                    <div class="eb-glow-1"></div>
+                                    <div class="eb-glow-2"></div>
+                                    <div class="eb-background-glow"></div>
+                                </div>
+                                <div class="rainfall-icon">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div class="rainfall-info">
+                                    <h3>Curah Hujan Bulan Ini</h3>
+                                    <p class="rainfall-value" id="monthly-rainfall">156 mm</p>
+                                    <p class="rainfall-status" id="monthly-status">Normal</p>
+                                    <p class="rainfall-update" id="monthly-update">Update: 5 menit lalu</p>
+                                </div>
+                            </div>
+                            <div class="rainfall-card prediction electric-border" style="--electric-border-color:#00eaff;">
+                                <div class="eb-layers">
+                                    <div class="eb-stroke"></div>
+                                    <div class="eb-glow-1"></div>
+                                    <div class="eb-glow-2"></div>
+                                    <div class="eb-background-glow"></div>
+                                </div>
+                                <div class="rainfall-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="rainfall-info">
+                                    <h3>Prediksi Besok</h3>
+                                    <p class="rainfall-value" id="tomorrow-rainfall">45 mm</p>
+                                    <p class="rainfall-status" id="tomorrow-status">Hujan Sedang</p>
+                                    <p class="rainfall-update" id="tomorrow-update">Update: 10 menit lalu</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="intensity-section">
+                        <h3 class="section-title">Klasifikasi Intensitas Hujan Real-time</h3>
+                        <div class="intensity-grid">
+                            <div class="intensity-card low">
+                                <div class="intensity-icon">
+                                    <i class="fas fa-cloud-sun-rain"></i>
+                                </div>
+                                <div class="intensity-info">
+                                    <h4>Rendah</h4>
+                                    <p class="intensity-range">&lt; 20 mm/hari</p>
+                                    <p class="intensity-desc">Gerimis - Hujan Ringan</p>
+                                </div>
+                                <div class="intensity-bar">
+                                    <div class="bar-fill" style="width: 25%"></div>
+                                </div>
+                            </div>
+                            <div class="intensity-card moderate">
+                                <div class="intensity-icon">
+                                    <i class="fas fa-cloud-rain"></i>
+                                </div>
+                                <div class="intensity-info">
+                                    <h4>Sedang</h4>
+                                    <p class="intensity-range">20-50 mm/hari</p>
+                                    <p class="intensity-desc">Hujan Sedang</p>
+                                </div>
+                                <div class="intensity-bar">
+                                    <div class="bar-fill" style="width: 50%"></div>
+                                </div>
+                            </div>
+                            <div class="intensity-card high">
+                                <div class="intensity-icon">
+                                    <i class="fas fa-cloud-showers-heavy"></i>
+                                </div>
+                                <div class="intensity-info">
+                                    <h4>Tinggi</h4>
+                                    <p class="intensity-range">50-100 mm/hari</p>
+                                    <p class="intensity-desc">Hujan Lebat</p>
+                                </div>
+                                <div class="intensity-bar">
+                                    <div class="bar-fill" style="width: 75%"></div>
+                                </div>
+                            </div>
+                            <div class="intensity-card extreme">
+                                <div class="intensity-icon">
+                                    <i class="fas fa-poo-storm"></i>
+                                </div>
+                                <div class="intensity-info">
+                                    <h4>Ekstrem</h4>
+                                    <p class="intensity-range">&gt; 100 mm/hari</p>
+                                    <p class="intensity-desc">Hujan Sangat Lebat</p>
+                                </div>
+                                <div class="intensity-bar">
+                                    <div class="bar-fill" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="prediction-section">
+                        <h3 class="section-title">Prediksi Curah Hujan 7 Hari Real-time</h3>
+                        <div class="prediction-cards" id="rainfall-predictions">
+                            <!-- Prediction cards will be generated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <div class="regional-section">
+                        <h3 class="section-title">Curah Hujan Regional Real-time</h3>
+                        <div class="regional-table">
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Wilayah</th>
+                                        <th>Hari Ini</th>
+                                        <th>Bulan Ini</th>
+                                        <th>Status</th>
+                                        <th>Tren</th>
+                                        <th>Update</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="regional-rainfall-data">
+                                    <!-- Data will be populated by JavaScript -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Weather Map Page -->
+            <section id="weather-map-page" class="page">
+                <div class="page-header">
+                    <h1>Peta Cuaca</h1>
+                    <p>Peta cuaca real-time dan satelit untuk monitoring kondisi atmosfer</p>
+                </div>
+
+                <div class="map-content">
+                    <div class="map-controls">
+                        <div class="control-group">
+                            <button class="control-btn active" data-map-type="temperature">
+                                <i class="fas fa-temperature-high"></i>
+                                Suhu
+                            </button>
+                            <button class="control-btn" data-map-type="rainfall">
+                                <i class="fas fa-cloud-rain"></i>
+                                Curah Hujan
+                            </button>
+                            <button class="control-btn" data-map-type="wind">
+                                <i class="fas fa-wind"></i>
+                                Angin
+                            </button>
+                            <button class="control-btn" data-map-type="pressure">
+                                <i class="fas fa-compress-alt"></i>
+                                Tekanan
+                            </button>
+                            <button class="control-btn" data-map-type="satellite">
+                                <i class="fas fa-satellite"></i>
+                                Satelit
+                            </button>
+                        </div>
+                        <div class="map-options">
+                            <label class="option-toggle">
+                                <input type="checkbox" id="animate-map" checked>
+                                <span class="toggle-slider"></span>
+                                Animasi
+                            </label>
+                            <label class="option-toggle">
+                                <input type="checkbox" id="show-legends" checked>
+                                <span class="toggle-slider"></span>
+                                Legenda
+                            </label>
+                            <button class="refresh-btn" id="refresh-map">
+                                <i class="fas fa-sync-alt"></i>
+                                Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="map-container">
+                        <div id="weather-map"></div>
+                        <div class="map-overlay">
+                            <div class="map-info">
+                                <h4 id="map-type-title">Peta Suhu</h4>
+                                <p id="map-update-time">Update: Beberapa detik lalu</p>
+                            </div>
+                            <div class="map-legend" id="map-legend">
+                                <!-- Legend will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="map-stats">
+                        <div class="map-stat-card">
+                            <i class="fas fa-eye"></i>
+                            <div class="map-stat-content">
+                                <h4>Visibilitas</h4>
+                                <p id="visibility-value">10 km</p>
+                            </div>
+                        </div>
+                        <div class="map-stat-card">
+                            <i class="fas fa-cloud"></i>
+                            <div class="map-stat-content">
+                                <h4>Tutupan Awan</h4>
+                                <p id="cloud-cover">45%</p>
+                            </div>
+                        </div>
+                        <div class="map-stat-card">
+                            <i class="fas fa-compress-alt"></i>
+                            <div class="map-stat-content">
+                                <h4>Tekanan Udara</h4>
+                                <p id="air-pressure">1012 hPa</p>
+                            </div>
+                        </div>
+                        <div class="map-stat-card">
+                            <i class="fas fa-sun"></i>
+                            <div class="map-stat-content">
+                                <h4>UV Index</h4>
+                                <p id="uv-index">6 - Tinggi</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
